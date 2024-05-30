@@ -1,17 +1,19 @@
-const Review = require('../models/Review');
-const Product = require('../models/Product');
-const User = require('../models/User');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 exports.addReview = async (req, res) => {
   try {
     const { productId, rating, comment } = req.body;
-    const review = await Review.create({
-      userId: req.user.userId,
-      productId,
-      rating,
-      comment,
+    const review = await prisma.review.create({
+      data: {
+        userId: req.user.userId,
+        productId,
+        rating,
+        comment,
+      },
     });
-    res.status(201).json({ message: 'Review added successfully', review });
+    res.status(201).json({ message: 'Review added', review });
   } catch (error) {
     res.status(500).json({ message: 'Error adding review', error });
   }
@@ -19,15 +21,8 @@ exports.addReview = async (req, res) => {
 
 exports.getProductReviews = async (req, res) => {
   try {
-    const { productId } = req.params;
-    const reviews = await Review.findAll({
-      where: { productId },
-      include: [
-        {
-          model: User,
-          attributes: ['username'],
-        },
-      ],
+    const reviews = await prisma.review.findMany({
+      where: { productId: parseInt(req.params.productId) },
     });
     res.status(200).json(reviews);
   } catch (error) {
@@ -37,16 +32,10 @@ exports.getProductReviews = async (req, res) => {
 
 exports.deleteReview = async (req, res) => {
   try {
-    const { id } = req.params;
-    const review = await Review.findByPk(id);
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-    if (review.userId !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-    await review.destroy();
-    res.status(200).json({ message: 'Review deleted successfully' });
+    await prisma.review.delete({
+      where: { id: parseInt(req.params.id) },
+    });
+    res.status(200).json({ message: 'Review deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting review', error });
   }

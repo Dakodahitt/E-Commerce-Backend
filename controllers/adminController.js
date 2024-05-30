@@ -1,41 +1,38 @@
-const User = require('../models/User');
-const Product = require('../models/Product');
-const Review = require('../models/Review');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 exports.elevateUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    await user.update({ role: 'admin' });
-    res.status(200).json({ message: 'User elevated to admin successfully', user });
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: { role: 'admin' },
+    });
+    res.status(200).json({ message: 'User elevated to admin', user });
   } catch (error) {
-    res.status(500).json({ message: 'Error elevating user to admin', error });
+    res.status(500).json({ message: 'Error elevating user', error });
   }
 };
 
 exports.demoteUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    await user.update({ role: 'user' });
-    res.status(200).json({ message: 'User demoted to regular user successfully', user });
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: { role: 'user' },
+    });
+    res.status(200).json({ message: 'User demoted to user', user });
   } catch (error) {
-    res.status(500).json({ message: 'Error demoting user to regular user', error });
+    res.status(500).json({ message: 'Error demoting user', error });
   }
 };
 
 exports.banUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    await user.destroy();
-    res.status(200).json({ message: 'User banned successfully' });
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: { banned: true },
+    });
+    res.status(200).json({ message: 'User banned', user });
   } catch (error) {
     res.status(500).json({ message: 'Error banning user', error });
   }
@@ -43,12 +40,11 @@ exports.banUser = async (req, res) => {
 
 exports.updateProductQuantity = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    await product.update({ quantity: req.body.quantity });
-    res.status(200).json({ message: 'Product quantity updated successfully', product });
+    const product = await prisma.product.update({
+      where: { id: parseInt(req.params.id) },
+      data: { quantity: req.body.quantity },
+    });
+    res.status(200).json({ message: 'Product quantity updated', product });
   } catch (error) {
     res.status(500).json({ message: 'Error updating product quantity', error });
   }
@@ -56,26 +52,12 @@ exports.updateProductQuantity = async (req, res) => {
 
 exports.updateProductStatus = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    await product.update({ status: req.body.status });
-    res.status(200).json({ message: 'Product status updated successfully', product });
+    const product = await prisma.product.update({
+      where: { id: parseInt(req.params.id) },
+      data: { status: req.body.status },
+    });
+    res.status(200).json({ message: 'Product status updated', product });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating product status', error });
-  }
-};
-
-exports.deleteReview = async (req, res) => {
-  try {
-    const review = await Review.findByPk(req.params.id);
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-    await review.destroy();
-    res.status(200).json({ message: 'Review deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting review', error });
+    res.status (500).json({ message: 'Error updating product status', error });
   }
 };
